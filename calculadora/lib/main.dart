@@ -38,6 +38,7 @@ class _CalculadoraScreenState extends State<CalculadoraScreen> {
   double _n1 = 0, _n2 = 0, resultado = 0, _resultado_anterior = 0;
   String _impresion = '';
 
+
   void aniadirNum(int n){
     setState(() {
       _impresion += n.toString();
@@ -48,12 +49,14 @@ class _CalculadoraScreenState extends State<CalculadoraScreen> {
       _impresion += s;
     });
   }
+
   void aniadirOp(String op){
     setState(() {
       _impresion += op;
       _operacion = op;
     });
   }
+
   void borrarTodo(){
     setState(() {
       _impresion = '';
@@ -75,6 +78,71 @@ class _CalculadoraScreenState extends State<CalculadoraScreen> {
     });
   }
 
+  void Operar(){
+    Operacion operacion = Suma();
+    String n1 = '', n2 = '';
+    int i = 0;
+    // Extraer el primer número
+    if(_impresion[0]=='-'){
+      n1 += _impresion[0];
+      i++;
+    }
+    while (_impresion[i] != '+' && _impresion[i] != '-' && _impresion[i] != '*' && _impresion[i] != '/' && _impresion[i] != '^') {
+      n1 += _impresion[i];
+      i++;
+    }
+
+    // Extraer el operador
+    if(_impresion[i] == '+' || _impresion[i] == '-' || _impresion[i] == '*' || _impresion[i] == '/' || _impresion[i] == '^'){
+      if(_impresion[i] != ''){
+        _operacion = _impresion[i];
+      }
+    }
+
+    // Extraer el segundo número
+    i++; // Pasar al siguiente carácter después del operador
+    while (i < _impresion.length) {
+      n2 += _impresion[i];
+      i++;
+    }
+    //print("Yo: $n1 $_operacion $n2");
+    if(n1 != ''){
+      _n1 = double.parse(n1);
+    }else{
+      _n1 = 0;
+    }
+    if(n2 != ''){
+      _n2 = double.parse(n2);
+    } else{
+      _n2 = 0;
+    }
+    switch(_operacion){
+      case '+':
+        operacion = Suma();
+        break;
+      case '-':
+        operacion = Resta();
+        break;
+      case '*':
+        operacion = Multiplicacion();
+        break;
+      case'/':
+        operacion = Division();
+        break;
+      case '^':
+        operacion = Potencia();
+        break;
+    }
+    setState(() {
+
+      resultado = operacion.calcular(_n1, _n2);
+      _impresion = '';
+      _n1 = 0;
+      _n2 = 0;
+      _resultado_anterior = resultado;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     //Scaffold es la estructura visual de la App
@@ -86,26 +154,32 @@ class _CalculadoraScreenState extends State<CalculadoraScreen> {
         titleTextStyle: TextStyle(color: Colors.red),
         backgroundColor: Colors.cyanAccent,
       ),
-//Cuerpo de la App
+      //Cuerpo de la App
       body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
+        //Empezamos con Centralizado
+        //Hacemos una columna principal
         child: Column(
+          //Centralizamos los componentes de la columna
           mainAxisAlignment: MainAxisAlignment.center,
+          //Componenetes de la columna:
           children: [
+            //Dejar espacio con la cabecera
+            SizedBox(height: 20,),
+            //Primero: Contenedor con la pantalla
             Container(
+              //anchura mínima para la "pantalla de la calculadora"
+              constraints: BoxConstraints(minWidth: 1000),
+              decoration: BoxDecoration(color: Color(0xFF002F00),borderRadius: BorderRadius.circular(10)),
+
+              //Componentes del contenedor (sólo la impresión con estilo)
               child: Text(
                 '$_impresion',
                 style: TextStyle(
-                  fontSize: 50,
+                  fontSize: 30,
                   color: Colors.white,
                   fontWeight: FontWeight.bold
                 ),
               ),
-              decoration: BoxDecoration(
-                border: Border(bottom: BorderSide(color: Colors.cyanAccent, width: 1.0)), // Define una línea de borde inferior
-              ),
-
             ),
 
           SizedBox(height: 50),
@@ -115,25 +189,25 @@ class _CalculadoraScreenState extends State<CalculadoraScreen> {
             for (int i = 1; i <= 3; i++)
               ElevatedButton(
                   onPressed: (){aniadirNum(i);},
-                  child: Text(i.toString(),style: TextStyle(
+                  child: Text(" "+i.toString()+" ",style: TextStyle(
                     fontSize: 30, // Aumenté el tamaño de la fuente para resaltar el resultado
                     fontWeight: FontWeight.bold, //negrita
                     color: Colors.black, // Cambié el color del texto para resaltar el resultado positivo
                   ),),
                 style: ElevatedButton.styleFrom(
-                minimumSize: Size(200, 100), // Ajusta el tamaño mínimo del botón
+                maximumSize: Size(200, 100), // Ajusta el tamaño mínimo del botón
             ),),
             ElevatedButton(
                 onPressed: (){
                   aniadirOp('+');
                 },
-                child: Text('+',style: TextStyle(
+                child: Text(' + ',style: TextStyle(
                   fontSize: 30, // Aumenté el tamaño de la fuente para resaltar el resultado
                   fontWeight: FontWeight.bold, //negrita
                   color: Colors.black, // Cambié el color del texto para resaltar el resultado positivo
                 ),),
               style: ElevatedButton.styleFrom(
-                minimumSize: Size(200, 100), // Ajusta el tamaño mínimo del botón
+                maximumSize: Size(200, 100), // Ajusta el tamaño mínimo del botón
               ),
             ),
           ],
@@ -145,25 +219,25 @@ class _CalculadoraScreenState extends State<CalculadoraScreen> {
             for (int i = 4; i <= 6; i++)
               ElevatedButton(
                   onPressed: (){aniadirNum(i);},
-                  child: Text(i.toString(),style: TextStyle(
+                  child: Text(" "+i.toString()+" ",style: TextStyle(
                     fontSize: 30, // Aumenté el tamaño de la fuente para resaltar el resultado
                     fontWeight: FontWeight.bold, //negrita
                     color: Colors.black, // Cambié el color del texto para resaltar el resultado positivo
                   ),),
                 style: ElevatedButton.styleFrom(
-                  minimumSize: Size(200, 100), // Ajusta el tamaño mínimo del botón
+                  maximumSize: Size(200, 100), // Ajusta el tamaño mínimo del botón
                 ),),
             ElevatedButton(
                 onPressed: (){
                   aniadirOp('-');
                 },
-                child: Text('-',style: TextStyle(
+                child: Text(' - ',style: TextStyle(
                   fontSize: 30, // Aumenté el tamaño de la fuente para resaltar el resultado
                   fontWeight: FontWeight.bold, //negrita
                   color: Colors.black, // Cambié el color del texto para resaltar el resultado positivo
                 ),),
               style: ElevatedButton.styleFrom(
-                minimumSize: Size(200, 100), // Ajusta el tamaño mínimo del botón
+                maximumSize: Size(200, 100), // Ajusta el tamaño mínimo del botón
               ),
             ),
           ],
@@ -177,26 +251,26 @@ class _CalculadoraScreenState extends State<CalculadoraScreen> {
                   onPressed: (){
                     aniadirNum(i);
                     },
-                  child: Text(i.toString(),style: TextStyle(
+                  child: Text(" "+i.toString()+" ",style: TextStyle(
                     fontSize: 30, // Aumenté el tamaño de la fuente para resaltar el resultado
                     fontWeight: FontWeight.bold, //negrita
                     color: Colors.black, // Cambié el color del texto para resaltar el resultado positivo
                   ),),
                 style: ElevatedButton.styleFrom(
-                  minimumSize: Size(200, 100), // Ajusta el tamaño mínimo del botón
+                  maximumSize: Size(200, 100), // Ajusta el tamaño mínimo del botón
                 ),
               ),
             ElevatedButton(
                 onPressed: (){
                   aniadirOp('*');
                 },
-                child: Text('*',style: TextStyle(
+                child: Text(' * ',style: TextStyle(
                   fontSize: 30, // Aumenté el tamaño de la fuente para resaltar el resultado
                   fontWeight: FontWeight.bold, //negrita
                   color: Colors.black, // Cambié el color del texto para resaltar el resultado positivo
                 ),),
               style: ElevatedButton.styleFrom(
-                minimumSize: Size(200, 100), // Ajusta el tamaño mínimo del botón
+                maximumSize: Size(200, 100), // Ajusta el tamaño mínimo del botón
               ),
             ),
           ],
@@ -209,13 +283,13 @@ class _CalculadoraScreenState extends State<CalculadoraScreen> {
                 onPressed: (){
                   aniadirChar('.');
                 },
-                child: Text('.',style: TextStyle(
+                child: Text(' . ',style: TextStyle(
                   fontSize: 30, // Aumenté el tamaño de la fuente para resaltar el resultado
                   fontWeight: FontWeight.bold, //negrita
                   color: Colors.black, // Cambié el color del texto para resaltar el resultado positivo
                 ),),
               style: ElevatedButton.styleFrom(
-                minimumSize: Size(200, 100), // Ajusta el tamaño mínimo del botón
+                maximumSize: Size(200, 100), // Ajusta el tamaño mínimo del botón
               ),
             ),
             ElevatedButton(
@@ -223,99 +297,38 @@ class _CalculadoraScreenState extends State<CalculadoraScreen> {
                 aniadirNum(0);
                 },
             
-              child: Text('0',style: TextStyle(
+              child: Text(' 0 ',style: TextStyle(
                 fontSize: 30, // Aumenté el tamaño de la fuente para resaltar el resultado
                 fontWeight: FontWeight.bold, //negrita
                 color: Colors.black, // Cambié el color del texto para resaltar el resultado positivo
               ),),
               style: ElevatedButton.styleFrom(
-                minimumSize: Size(200, 100), // Ajusta el tamaño mínimo del botón
+                maximumSize: Size(200, 100), // Ajusta el tamaño mínimo del botón
               ),
             ),
             ElevatedButton(
               onPressed: (){
-                Operacion operacion = Suma();
-                String n1 = '', n2 = '';
-                int i = 0;
-                // Extraer el primer número
-                if(_impresion[0]=='-'){
-                  n1 += _impresion[0];
-                  i++;
-                }
-                while (_impresion[i] != '+' && _impresion[i] != '-' && _impresion[i] != '*' && _impresion[i] != '/' && _impresion[i] != '^') {
-                  n1 += _impresion[i];
-                  i++;
-                }
-
-                // Extraer el operador
-                if(_impresion[i] == '+' || _impresion[i] == '-' || _impresion[i] == '*' || _impresion[i] == '/' || _impresion[i] == '^'){
-                  if(_impresion[i] != ''){
-                    _operacion = _impresion[i];
-                  }
-                }
-
-                // Extraer el segundo número
-                i++; // Pasar al siguiente carácter después del operador
-                while (i < _impresion.length) {
-                  n2 += _impresion[i];
-                  i++;
-                }
-                //print("Yo: $n1 $_operacion $n2");
-                if(n1 != ''){
-                  _n1 = double.parse(n1);
-                }else{
-                  _n1 = 0;
-                }
-                if(n2 != ''){
-                  _n2 = double.parse(n2);
-                } else{
-                  _n2 = 0;
-                }
-                switch(_operacion){
-                  case '+':
-                    operacion = Suma();
-                    break;
-                  case '-':
-                    operacion = Resta();
-                    break;
-                  case '*':
-                    operacion = Multiplicacion();
-                    break;
-                  case'/':
-                    operacion = Division();
-                    break;
-                  case '^':
-                    operacion = Potencia();
-                    break;
-                }
-                setState(() {
-
-                  resultado = operacion.calcular(_n1, _n2);
-                  _impresion = '';
-                  _n1 = 0;
-                  _n2 = 0;
-                  _resultado_anterior = resultado;
-                });
-              }, child: Text('=',style: TextStyle(
+                Operar();
+              }, child: Text(' = ',style: TextStyle(
               fontSize: 30, // Aumenté el tamaño de la fuente para resaltar el resultado
               fontWeight: FontWeight.bold, //negrita
               color: Colors.black, // Cambié el color del texto para resaltar el resultado positivo
             ),),
-    style: ElevatedButton.styleFrom(
-    minimumSize: Size(200, 100), // Ajusta el tamaño mínimo del botón
+              style: ElevatedButton.styleFrom(
+              maximumSize: Size(200, 100), // Ajusta el tamaño mínimo del botón
     ),
             ),
             ElevatedButton(
                 onPressed: (){
                   aniadirOp('/');
                 },
-                child: Text('/',style: TextStyle(
+                child: Text(' / ',style: TextStyle(
                   fontSize: 30, // Aumenté el tamaño de la fuente para resaltar el resultado
                   fontWeight: FontWeight.bold, //negrita
                   color: Colors.black, // Cambié el color del texto para resaltar el resultado positivo
                 ),),
               style: ElevatedButton.styleFrom(
-                minimumSize: Size(200, 100), // Ajusta el tamaño mínimo del botón
+                maximumSize: Size(200, 100), // Ajusta el tamaño mínimo del botón
               ),
             ),
           ],
@@ -334,20 +347,20 @@ class _CalculadoraScreenState extends State<CalculadoraScreen> {
                     color: Colors.black, // Cambié el color del texto para resaltar el resultado positivo
                   ),),
                 style: ElevatedButton.styleFrom(
-                  minimumSize: Size(200, 100), // Ajusta el tamaño mínimo del botón
+                  maximumSize: Size(200, 100), // Ajusta el tamaño mínimo del botón
                 ),
               ),
               ElevatedButton(
                   onPressed: (){
                     borrar();
                   },
-                  child: Text('<',style: TextStyle(
+                  child: Text(' < ',style: TextStyle(
                     fontSize: 30, // Aumenté el tamaño de la fuente para resaltar el resultado
                     fontWeight: FontWeight.bold, //negrita
                     color: Colors.black, // Cambié el color del texto para resaltar el resultado positivo
                   ),),
                 style: ElevatedButton.styleFrom(
-                  minimumSize: Size(200, 100), // Ajusta el tamaño mínimo del botón
+                  maximumSize: Size(200, 100), // Ajusta el tamaño mínimo del botón
                 ),
               ),
               ElevatedButton(
@@ -362,7 +375,7 @@ class _CalculadoraScreenState extends State<CalculadoraScreen> {
     color: Colors.black, // Cambié el color del texto para resaltar el resultado positivo
     ),),
                 style: ElevatedButton.styleFrom(
-                  minimumSize: Size(200, 100), // Ajusta el tamaño mínimo del botón
+                  maximumSize: Size(200, 100), // Ajusta el tamaño mínimo del botón
                 ),
               ),
 
@@ -370,16 +383,16 @@ class _CalculadoraScreenState extends State<CalculadoraScreen> {
                   onPressed: (){
                     aniadirOp('^');
                   },
-                  child: Text('^',
+                  child: Text(' ^ ',
                     style: TextStyle(
                       fontSize: 30, // Aumenté el tamaño de la fuente para resaltar el resultado
                       fontWeight: FontWeight.bold, //negrita
                       color: Colors.black, // Cambié el color del texto para resaltar el resultado positivo
                     ),
                   ),
-    style: ElevatedButton.styleFrom(
-    minimumSize: Size(200, 100), // Ajusta el tamaño mínimo del botón
-    ),
+                  style: ElevatedButton.styleFrom(
+                    maximumSize: Size(200, 100), // Ajusta el tamaño mínimo del botón
+                  ),
               ),
 
             ],
