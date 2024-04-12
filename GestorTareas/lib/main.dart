@@ -12,7 +12,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Gestor de tareas',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         // This is the theme of your application.
@@ -129,9 +129,20 @@ class _GestorTareasScreen extends State<GestorTareasScreen> {
                               color: Colors.blueGrey,
                             ),
                           ),
+                          subtitle: Text(
+                            tarea.IsCompletada()?"Completada":"Pendiente",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: !tarea.completada?Colors.grey:Colors.green,
+                            ),
+                          ),
                           leading: Checkbox(
                             value: tarea.completada,
-                            onChanged: null,
+                            onChanged:(value){
+                              setState(() {
+                                tarea.completada = !tarea.completada;
+                              });
+                            }
                           ),
                           trailing: IconButton(
                           icon: Icon(Icons.delete),
