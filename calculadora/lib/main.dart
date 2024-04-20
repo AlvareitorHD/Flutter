@@ -70,6 +70,8 @@ class _CalculadoraScreenState extends State<CalculadoraScreen> {
 
   void borrar(){
     String imp = '';
+    //Si no está vacía la cadena
+    if(_impresion.length > 0)
     setState(() {
       for(int i = 0; i < _impresion.length-1; i++){
         imp += _impresion[i];
@@ -80,42 +82,19 @@ class _CalculadoraScreenState extends State<CalculadoraScreen> {
 
   void Operar(){
     Operacion operacion = Suma();
-    String n1 = '', n2 = '';
-    int i = 0;
-    // Extraer el primer número
-    if(_impresion[0]=='-'){
-      n1 += _impresion[0];
-      i++;
-    }
-    while (_impresion[i] != '+' && _impresion[i] != '-' && _impresion[i] != '*' && _impresion[i] != '/' && _impresion[i] != '^') {
-      n1 += _impresion[i];
-      i++;
-    }
-
-    // Extraer el operador
-    if(_impresion[i] == '+' || _impresion[i] == '-' || _impresion[i] == '*' || _impresion[i] == '/' || _impresion[i] == '^'){
-      if(_impresion[i] != ''){
-        _operacion = _impresion[i];
-      }
-    }
-
-    // Extraer el segundo número
-    i++; // Pasar al siguiente carácter después del operador
-    while (i < _impresion.length) {
-      n2 += _impresion[i];
-      i++;
-    }
-    //print("Yo: $n1 $_operacion $n2");
-    if(n1 != ''){
-      _n1 = double.parse(n1);
-    }else{
-      _n1 = 0;
-    }
-    if(n2 != ''){
-      _n2 = double.parse(n2);
-    } else{
-      _n2 = 0;
-    }
+    // Corto las partes de la operación por el tipo de operador
+    List<String> partes = _impresion.split(RegExp(r'[-+*/^]'));
+    // Extraccion del primer elemento (si no hay -> 0 por defecto)
+    _n1 = partes.isNotEmpty?double.parse(partes[0]): 0.0;
+   // Asignar operacion (prioridad de orden)
+    _operacion = _impresion.contains('^')?'^':
+                 _impresion.contains('*')?'*':
+                 _impresion.contains('/')?'/':
+                 _impresion.contains('+')?'+':
+                 _impresion.contains('-')?'-':'';
+    //Extraer segundo operando
+    _n2 = partes.length > 1? double.parse(partes[1]): 0.0;
+    //establecer la operacion a realizar
     switch(_operacion){
       case '+':
         operacion = Suma();
@@ -136,7 +115,7 @@ class _CalculadoraScreenState extends State<CalculadoraScreen> {
     setState(() {
 
       resultado = operacion.calcular(_n1, _n2);
-      _impresion = '';
+      _impresion = resultado.toString();
       _n1 = 0;
       _n2 = 0;
       _resultado_anterior = resultado;
@@ -169,11 +148,16 @@ class _CalculadoraScreenState extends State<CalculadoraScreen> {
             Container(
               //anchura mínima para la "pantalla de la calculadora"
               constraints: BoxConstraints(minWidth: 1000),
+              margin: EdgeInsets.symmetric(horizontal: 20.0), // Márgenes de 20 píxeles a cada lado
               decoration: BoxDecoration(color: Color(0xFF002F00),borderRadius: BorderRadius.circular(10)),
 
               //Componentes del contenedor (sólo la impresión con estilo)
-              child: Text(
-                '$_impresion',
+              child: TextField(
+                // Desactivo la capacidad de escribir sobre él
+                enabled: false,
+                // Pongo el controlador con el texto de impresion
+                controller: TextEditingController(text: _impresion),
+                textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 30,
                   color: Colors.white,
@@ -187,27 +171,48 @@ class _CalculadoraScreenState extends State<CalculadoraScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             for (int i = 1; i <= 3; i++)
-              ElevatedButton(
-                  onPressed: (){aniadirNum(i);},
-                  child: Text(" "+i.toString()+" ",style: TextStyle(
-                    fontSize: 30, // Aumenté el tamaño de la fuente para resaltar el resultado
-                    fontWeight: FontWeight.bold, //negrita
-                    color: Colors.black, // Cambié el color del texto para resaltar el resultado positivo
-                  ),),
-                style: ElevatedButton.styleFrom(
-                maximumSize: Size(200, 100), // Ajusta el tamaño mínimo del botón
-            ),),
-            ElevatedButton(
-                onPressed: (){
+              SizedBox(
+                width: MediaQuery.of(context).size.width * 0.25, // 5% del ancho de la pantalla
+                child: ElevatedButton(
+                  onPressed: () {
+                    aniadirNum(i);
+                  },
+                  child: Text(
+                    " $i ",
+                    style: TextStyle(
+                      fontSize: 30,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.zero,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                  ),
+                ),
+              ),
+            SizedBox(
+              width: MediaQuery.of(context).size.width * 0.25, // 5% del ancho de la pantalla
+              child: ElevatedButton(
+                onPressed: () {
                   aniadirOp('+');
                 },
-                child: Text(' + ',style: TextStyle(
-                  fontSize: 30, // Aumenté el tamaño de la fuente para resaltar el resultado
-                  fontWeight: FontWeight.bold, //negrita
-                  color: Colors.black, // Cambié el color del texto para resaltar el resultado positivo
-                ),),
-              style: ElevatedButton.styleFrom(
-                maximumSize: Size(200, 100), // Ajusta el tamaño mínimo del botón
+                child: Text(
+                  " + ",
+                  style: TextStyle(
+                    fontSize: 30,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                ),
               ),
             ),
           ],
@@ -217,27 +222,48 @@ class _CalculadoraScreenState extends State<CalculadoraScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             for (int i = 4; i <= 6; i++)
-              ElevatedButton(
-                  onPressed: (){aniadirNum(i);},
-                  child: Text(" "+i.toString()+" ",style: TextStyle(
-                    fontSize: 30, // Aumenté el tamaño de la fuente para resaltar el resultado
-                    fontWeight: FontWeight.bold, //negrita
-                    color: Colors.black, // Cambié el color del texto para resaltar el resultado positivo
-                  ),),
-                style: ElevatedButton.styleFrom(
-                  maximumSize: Size(200, 100), // Ajusta el tamaño mínimo del botón
-                ),),
-            ElevatedButton(
-                onPressed: (){
+              SizedBox(
+                width: MediaQuery.of(context).size.width * 0.25, // 5% del ancho de la pantalla
+                child: ElevatedButton(
+                  onPressed: () {
+                    aniadirNum(i);
+                  },
+                  child: Text(
+                    " $i ",
+                    style: TextStyle(
+                      fontSize: 30,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.zero,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                  ),
+                ),
+              ),
+            SizedBox(
+              width: MediaQuery.of(context).size.width * 0.25, // 5% del ancho de la pantalla
+              child: ElevatedButton(
+                onPressed: () {
                   aniadirOp('-');
                 },
-                child: Text(' - ',style: TextStyle(
-                  fontSize: 30, // Aumenté el tamaño de la fuente para resaltar el resultado
-                  fontWeight: FontWeight.bold, //negrita
-                  color: Colors.black, // Cambié el color del texto para resaltar el resultado positivo
-                ),),
-              style: ElevatedButton.styleFrom(
-                maximumSize: Size(200, 100), // Ajusta el tamaño mínimo del botón
+                child: Text(
+                  " - ",
+                  style: TextStyle(
+                    fontSize: 30,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                ),
               ),
             ),
           ],
@@ -247,30 +273,48 @@ class _CalculadoraScreenState extends State<CalculadoraScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             for (int i = 7; i <= 9; i++)
-              ElevatedButton(
-                  onPressed: (){
+              SizedBox(
+                width: MediaQuery.of(context).size.width * 0.25, // 5% del ancho de la pantalla
+                child: ElevatedButton(
+                  onPressed: () {
                     aniadirNum(i);
-                    },
-                  child: Text(" "+i.toString()+" ",style: TextStyle(
-                    fontSize: 30, // Aumenté el tamaño de la fuente para resaltar el resultado
-                    fontWeight: FontWeight.bold, //negrita
-                    color: Colors.black, // Cambié el color del texto para resaltar el resultado positivo
-                  ),),
-                style: ElevatedButton.styleFrom(
-                  maximumSize: Size(200, 100), // Ajusta el tamaño mínimo del botón
+                  },
+                  child: Text(
+                    " $i ",
+                    style: TextStyle(
+                      fontSize: 30,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.zero,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                  ),
                 ),
               ),
-            ElevatedButton(
-                onPressed: (){
+            SizedBox(
+              width: MediaQuery.of(context).size.width * 0.25, // 5% del ancho de la pantalla
+              child: ElevatedButton(
+                onPressed: () {
                   aniadirOp('*');
                 },
-                child: Text(' * ',style: TextStyle(
-                  fontSize: 30, // Aumenté el tamaño de la fuente para resaltar el resultado
-                  fontWeight: FontWeight.bold, //negrita
-                  color: Colors.black, // Cambié el color del texto para resaltar el resultado positivo
-                ),),
-              style: ElevatedButton.styleFrom(
-                maximumSize: Size(200, 100), // Ajusta el tamaño mínimo del botón
+                child: Text(
+                  " * ",
+                  style: TextStyle(
+                    fontSize: 30,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                ),
               ),
             ),
           ],
@@ -279,56 +323,92 @@ class _CalculadoraScreenState extends State<CalculadoraScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            ElevatedButton(
-                onPressed: (){
+            SizedBox(
+              width: MediaQuery.of(context).size.width * 0.25, // 5% del ancho de la pantalla
+              child: ElevatedButton(
+                onPressed: () {
                   aniadirChar('.');
                 },
-                child: Text(' . ',style: TextStyle(
-                  fontSize: 30, // Aumenté el tamaño de la fuente para resaltar el resultado
-                  fontWeight: FontWeight.bold, //negrita
-                  color: Colors.black, // Cambié el color del texto para resaltar el resultado positivo
-                ),),
-              style: ElevatedButton.styleFrom(
-                maximumSize: Size(200, 100), // Ajusta el tamaño mínimo del botón
+                child: Text(
+                  " . ",
+                  style: TextStyle(
+                    fontSize: 30,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                ),
               ),
             ),
-            ElevatedButton(
-              onPressed: (){
-                aniadirNum(0);
+            SizedBox(
+              width: MediaQuery.of(context).size.width * 0.25, // 5% del ancho de la pantalla
+              child: ElevatedButton(
+                onPressed: () {
+                  aniadirNum(0);
                 },
-            
-              child: Text(' 0 ',style: TextStyle(
-                fontSize: 30, // Aumenté el tamaño de la fuente para resaltar el resultado
-                fontWeight: FontWeight.bold, //negrita
-                color: Colors.black, // Cambié el color del texto para resaltar el resultado positivo
-              ),),
-              style: ElevatedButton.styleFrom(
-                maximumSize: Size(200, 100), // Ajusta el tamaño mínimo del botón
+                child: Text(
+                  " 0 ",
+                  style: TextStyle(
+                    fontSize: 30,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                ),
               ),
             ),
-            ElevatedButton(
-              onPressed: (){
-                Operar();
-              }, child: Text(' = ',style: TextStyle(
-              fontSize: 30, // Aumenté el tamaño de la fuente para resaltar el resultado
-              fontWeight: FontWeight.bold, //negrita
-              color: Colors.black, // Cambié el color del texto para resaltar el resultado positivo
-            ),),
-              style: ElevatedButton.styleFrom(
-              maximumSize: Size(200, 100), // Ajusta el tamaño mínimo del botón
-    ),
+            SizedBox(
+              width: MediaQuery.of(context).size.width * 0.25, // 5% del ancho de la pantalla
+              child: ElevatedButton(
+                onPressed: () {
+                  Operar();
+                },
+                child: Text(
+                  " = ",
+                  style: TextStyle(
+                    fontSize: 30,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                ),
+              ),
             ),
-            ElevatedButton(
-                onPressed: (){
+            SizedBox(
+              width: MediaQuery.of(context).size.width * 0.25, // 5% del ancho de la pantalla
+              child: ElevatedButton(
+                onPressed: () {
                   aniadirOp('/');
                 },
-                child: Text(' / ',style: TextStyle(
-                  fontSize: 30, // Aumenté el tamaño de la fuente para resaltar el resultado
-                  fontWeight: FontWeight.bold, //negrita
-                  color: Colors.black, // Cambié el color del texto para resaltar el resultado positivo
-                ),),
-              style: ElevatedButton.styleFrom(
-                maximumSize: Size(200, 100), // Ajusta el tamaño mínimo del botón
+                child: Text(
+                  " / ",
+                  style: TextStyle(
+                    fontSize: 30,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                ),
               ),
             ),
           ],
@@ -337,62 +417,96 @@ class _CalculadoraScreenState extends State<CalculadoraScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              ElevatedButton(
-                  onPressed: (){
+              SizedBox(
+                width: MediaQuery.of(context).size.width * 0.25, // 5% del ancho de la pantalla
+                child: ElevatedButton(
+                  onPressed: () {
                     borrarTodo();
                   },
-                  child: Text('AC',style: TextStyle(
-                    fontSize: 30, // Aumenté el tamaño de la fuente para resaltar el resultado
-                    fontWeight: FontWeight.bold, //negrita
-                    color: Colors.black, // Cambié el color del texto para resaltar el resultado positivo
-                  ),),
-                style: ElevatedButton.styleFrom(
-                  maximumSize: Size(200, 100), // Ajusta el tamaño mínimo del botón
+                  child: Text(
+                    " AC ",
+                    style: TextStyle(
+                      fontSize: 30,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.zero,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                  ),
                 ),
               ),
-              ElevatedButton(
-                  onPressed: (){
+              SizedBox(
+                width: MediaQuery.of(context).size.width * 0.25, // 5% del ancho de la pantalla
+                child: ElevatedButton(
+                  onPressed: () {
                     borrar();
                   },
-                  child: Text(' < ',style: TextStyle(
-                    fontSize: 30, // Aumenté el tamaño de la fuente para resaltar el resultado
-                    fontWeight: FontWeight.bold, //negrita
-                    color: Colors.black, // Cambié el color del texto para resaltar el resultado positivo
-                  ),),
-                style: ElevatedButton.styleFrom(
-                  maximumSize: Size(200, 100), // Ajusta el tamaño mínimo del botón
+                  child: Text(
+                    " < ",
+                    style: TextStyle(
+                      fontSize: 30,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.zero,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                  ),
                 ),
               ),
-              ElevatedButton(
-                  onPressed: (){
+              SizedBox(
+                width: MediaQuery.of(context).size.width * 0.25, // 5% del ancho de la pantalla
+                child: ElevatedButton(
+                  onPressed: () {
                     setState(() {
                       _impresion += _resultado_anterior.toString();
                     });
                   },
-                  child: Text('Ans',style: TextStyle(
-    fontSize: 30, // Aumenté el tamaño de la fuente para resaltar el resultado
-    fontWeight: FontWeight.bold, //negrita
-    color: Colors.black, // Cambié el color del texto para resaltar el resultado positivo
-    ),),
-                style: ElevatedButton.styleFrom(
-                  maximumSize: Size(200, 100), // Ajusta el tamaño mínimo del botón
-                ),
-              ),
-
-              ElevatedButton(
-                  onPressed: (){
-                    aniadirOp('^');
-                  },
-                  child: Text(' ^ ',
+                  child: Text(
+                    " Ans ",
                     style: TextStyle(
-                      fontSize: 30, // Aumenté el tamaño de la fuente para resaltar el resultado
-                      fontWeight: FontWeight.bold, //negrita
-                      color: Colors.black, // Cambié el color del texto para resaltar el resultado positivo
+                      fontSize: 30,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
                     ),
                   ),
                   style: ElevatedButton.styleFrom(
-                    maximumSize: Size(200, 100), // Ajusta el tamaño mínimo del botón
+                    padding: EdgeInsets.zero,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
                   ),
+                ),
+              ),
+
+              SizedBox(
+                width: MediaQuery.of(context).size.width * 0.25, // 5% del ancho de la pantalla
+                child: ElevatedButton(
+                  onPressed: () {
+                    aniadirOp('^');
+                  },
+                  child: Text(
+                    " ^ ",
+                    style: TextStyle(
+                      fontSize: 30,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.zero,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                  ),
+                ),
               ),
 
             ],
