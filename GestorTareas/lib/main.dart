@@ -109,18 +109,28 @@ class _GestorTareasScreen extends State<GestorTareasScreen> {
               ],
             ),
             SizedBox(height: 20),
+            // Con Expanded ocupo el espacio disponible de la pantalla
             Expanded(
+              // Agrego relleno horizontal de 40 px
               child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: 40),
+                // Construyo lista que añade tareas dinámicamente
                 child: ListView.builder(
+                  // cantidad de tareas de la lista
                   itemCount: gestor.getTareas().length,
+                  // a través de un índice devuelve un widget tarea
                   itemBuilder: (context, index) {
                     Tarea tarea = gestor.getTareas()[index];
                     return Padding(
+                      // Espacio entre tareas verticalmente
                       padding: EdgeInsets.symmetric(vertical: 8.0),
+                      // Widget para hacer de contenedor de cada tarea
                       child: Card(
+                        // efecto sombra paralela
                         elevation: 4.0,
+                        // widget que representa una tarea
                         child: ListTile(
+                          // DESCRIPCION
                           title: Text(
                             tarea.getDescripcion(),
                             style: TextStyle(
@@ -129,6 +139,7 @@ class _GestorTareasScreen extends State<GestorTareasScreen> {
                               color: Colors.blueGrey,
                             ),
                           ),
+                          // ESTADO DE LA TAREA
                           subtitle: Text(
                             tarea.IsCompletada()?"Completada":"Pendiente",
                             style: TextStyle(
@@ -136,6 +147,7 @@ class _GestorTareasScreen extends State<GestorTareasScreen> {
                               color: !tarea.completada?Colors.grey:Colors.green,
                             ),
                           ),
+                          // CASILLA DE COMPLETADA
                           leading: Checkbox(
                             value: tarea.completada,
                             onChanged:(value){
@@ -144,6 +156,7 @@ class _GestorTareasScreen extends State<GestorTareasScreen> {
                               });
                             }
                           ),
+                          // al final del ListTile poner el BOTON ELIMINAR TAREA
                           trailing: IconButton(
                           icon: Icon(Icons.delete),
                             color: Colors.red,
