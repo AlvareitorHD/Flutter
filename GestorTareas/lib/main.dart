@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:gestor_tareas/GestorTareas.dart';
 import 'package:gestor_tareas/Tarea.dart';
+
+
 void main() {
   runApp(const MyApp());
 }
@@ -56,6 +58,7 @@ class GestorTareasScreen extends StatefulWidget {
 }
 
 class _GestorTareasScreen extends State<GestorTareasScreen> {
+
   final GestorTareas gestor = GestorTareas();
   final TextEditingController _controller = TextEditingController();
   String _descripcion = '';
